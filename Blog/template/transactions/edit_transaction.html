@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Main Card -->
+            <div class="card border-0 shadow-lg rounded-3 overflow-hidden animate__animated animate__fadeIn">
+                <!-- Card Header -->
+                <div class="card-header bg-white py-4 border-0">
+                    <h1 class="h4 text-center fw-bold text-gray-800 mb-0">
+                        <i class="fas fa-user-edit me-2" style="color: #007A36;"></i>Edit User Profile
+                    </h1>
+                </div>
+                
+                <!-- Card Body -->
+                <div class="card-body px-4 py-4">
+                    <!-- System Messages -->
+                    {% if messages %}
+                    <div class="mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-2" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                                <div>{{ message }}</div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- User Form -->
+                    <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="text-center mb-4">
+                            <label for="profile_picture" class="d-inline-block position-relative">
+                                <img src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}/static/img/default-profile.png{% endif %}" 
+                                    alt="Profile Picture" 
+                                    class="rounded-circle shadow-sm profile-pic"
+                                    style="width: 120px; height: 120px; object-fit: cover;">
+                                <div class="position-absolute bottom-0 end-0 bg-primary rounded-circle p-2 shadow-sm">
+                                    <i class="fas fa-camera text-white"></i>
+                                </div>
+                            </label>
+                            <p class="text-muted small mt-2">Click image to change profile photo</p>
+                            <input type="file" name="profile_picture" id="profile_picture" class="d-none">
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="row g-3">
+                            <!-- Username -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-user text-muted"></i></span>
+                                        {{ form.username }}
+                                        <label for="id_username" class="ms-4">Username</label>
+                                    </div>
+                                    {% for error in form.username.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- NIK -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-id-card text-muted"></i></span>
+                                        {{ form.nik }}
+                                        <label for="id_nik" class="ms-4">National ID (NIK)</label>
+                                    </div>
+                                    {% for error in form.nik.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Email -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-envelope text-muted"></i></span>
+                                        {{ form.email }}
+                                        <label for="id_email" class="ms-4">Email Address</label>
+                                    </div>
+                                    {% for error in form.email.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Phone Number -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-phone text-muted"></i></span>
+                                        {{ form.nomor_hape }}
+                                        <label for="id_nomor_hape" class="ms-4">Phone Number</label>
+                                    </div>
+                                    {% for error in form.nomor_hape.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Address -->
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-map-marker-alt text-muted"></i></span>
+                                        {{ form.address }}
+                                        <label for="id_address" class="ms-4">Address</label>
+                                    </div>
+                                    {% for error in form.address.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Password -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-lock text-muted"></i></span>
+                                        {{ form.password1 }}
+                                        <label for="id_password1" class="ms-4">Password</label>
+                                    </div>
+                                    {% for error in form.password1.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-lock text-muted"></i></span>
+                                        {{ form.password2 }}
+                                        <label for="id_password2" class="ms-4">Confirm Password</label>
+                                    </div>
+                                    {% for error in form.password2.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Role -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-user-tag text-muted"></i></span>
+                                        {{ form.role }}
+                                        <label for="id_role" class="ms-4">User Role</label>
+                                    </div>
+                                    {% for error in form.role.errors %}
+                                        <div class="text-danger small mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            
+                            <!-- Active Status -->
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light"><i class="fas fa-toggle-on text-muted"></i></span>
+                                        <div class="form-control d-flex align-items-center">
+                                            {{ form.is_active }}
+                                            <label for="id_is_active" class="ms-2 mb-0">Active User</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-3 mt-4">
+                            <button type="submit" class="btn btn-lg py-3 fw-bold text-white border-0 shadow-sm" 
+                                    style="background-color: #007A36;">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            
+                            <a href="{% url 'manage_transactions' %}" class="btn btn-outline-secondary py-3 fw-bold">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f7fa;
+    }
+    
+    .form-control, .form-select {
+        padding: 12px 16px;
+        border-radius: 8px !important;
+        border: 1px solid #e0e0e0;
+        transition: all 0.2s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #007A36;
+        box-shadow: 0 0 0 0.25rem rgba(0, 122, 54, 0.15);
+    }
+    
+    .input-group-text {
+        background-color: #f8f9fa;
+        border: 1px solid #e0e0e0;
+        transition: all 0.2s ease;
+    }
+    
+    .input-group:hover .input-group-text {
+        background-color: #f1f1f1;
+    }
+    
+    .input-group:hover .form-control {
+        border-color: #c0c0c0;
+    }
+    
+    .profile-pic {
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .profile-pic:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn {
+        border-radius: 8px;
+        transition: all 0.2s ease;
+    }
+    
+    .btn:hover {
+        transform: translateY(-2px);
+    }
+</style>
+
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+<!-- Animate.css -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+<!-- Script for Image Preview -->
+<script>
+    // Profile picture preview
+    document.getElementById("profile_picture").addEventListener("change", function(event) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            document.querySelector(".profile-pic").src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    });
+
+    // Click profile picture to trigger file input
+    document.querySelector(".profile-pic").addEventListener("click", function() {
+        document.getElementById("profile_picture").click();
+    });
+</script>
+
+{% endblock %}

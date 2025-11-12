@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+<div class="container mt-5">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <div>
+            <h2 class="fw-bold text-primary mb-2">Kelola Pengguna</h2>
+            <p class="text-muted">Manajemen pengguna sistem dan nasabah bank sampah</p>
+        </div>
+        <!-- Add User Button -->
+        <a href="{% url 'add_user' %}" class="btn btn-success btn-lg shadow-sm">
+            <i class="fas fa-user-plus me-2"></i>Tambah Pengguna
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow-sm mb-5 border-0">
+        <div class="card-body p-4">
+            <form method="GET" class="row g-3">
+                <div class="col-md-10">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0">
+                            <i class="fas fa-search text-muted"></i>
+                        </span>
+                        <input type="text" name="q" class="form-control border-start-0 ps-0" 
+                               placeholder="Cari berdasarkan Nama, Bank Sampah, atau Email" 
+                               value="{{ request.GET.q }}">
+                    </div>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-2"></i>Cari
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Users Table -->
+    {% if request.user.is_authenticated and request.user.role == 'admin_induk' %}
+    <div class="card shadow-sm border-0 mb-5">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold m-0">
+                <i class="fas fa-user-shield text-primary me-2"></i>Pengguna Admin
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 60px;">Profil</th>
+                            <th>Nama</th>
+                            <th>Bank Sampah</th>
+                            <th>Email</th>
+                            <th>Telepon</th>
+                            <th>Peran</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr class="position-relative">
+                            <td class="ps-4">
+                                <div class="profile-img-container">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ user.profile_picture.url }}" 
+                                             alt="Foto Profil" 
+                                             class="profile-img">
+                                    {% else %}
+                                        <img src="{% static 'images/default-avatar.png' %}" 
+                                             alt="Foto Profil Default" 
+                                             class="profile-img">
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <span class="fw-semibold">{{ user.username }}</span>
+                            </td>
+                            <td>{{ user.nama_bank|default:"-" }}</td>
+                            <td>
+                                <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                                    <i class="fas fa-envelope text-muted me-1"></i> 
+                                    <span class="text-primary">{{ user.email }}</span>
+                                </a>
+                            </td>
+                            <td>{{ user.nomor_hape|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-user-tag text-primary me-1"></i>
+                                    {{ user.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="fas fa-check-circle me-1"></i> Aktif
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">
+                                        <i class="fas fa-times-circle me-1"></i> Nonaktif
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                {% if not user.is_superuser %}
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <a href="{% url 'edit_user' user.id %}" 
+                                           class="btn btn-outline-primary rounded-start-2"
+                                           data-bs-toggle="tooltip" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a href="{% url 'delete_user' user.id %}" 
+                                           class="btn btn-outline-danger rounded-end-2"
+                                           onclick="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?')"
+                                           data-bs-toggle="tooltip" title="Hapus">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </a>
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted small">Super Admin</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="fas fa-users-slash fa-2x mb-2"></i><br>
+                                Tidak ada pengguna admin yang tersedia
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Nasabah Table -->
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="fw-bold m-0">
+                <i class="fas fa-users text-primary me-2"></i>Daftar Nasabah
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4" style="width: 60px;">Profil</th>
+                            <th>Nama</th>
+                            <th>Bank Nasabah</th>
+                            <th>Email</th>
+                            <th>Telepon</th>
+                            <th>Peran</th>
+                            <th>Status</th>
+                            <th class="text-end pe-4">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in nasabahs %}
+                        <tr class="position-relative">
+                            <td class="ps-4">
+                                <div class="profile-img-container">
+                                    {% if user.profile_picture %}
+                                        <img src="{{ user.profile_picture.url }}" 
+                                             alt="Foto Profil" 
+                                             class="profile-img">
+                                    {% else %}
+                                        <img src="{% static 'images/default-avatar.png' %}" 
+                                             alt="Foto Profil Default" 
+                                             class="profile-img">
+                                    {% endif %}
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <span class="fw-semibold">{{ user.username }}</span>
+                            </td>
+                            <td>{{ user.nama_bank|default:"-" }}</td>
+                            <td>
+                                <a href="mailto:{{ user.email }}" class="text-decoration-none">
+                                    <i class="fas fa-envelope text-muted me-1"></i> 
+                                    <span class="text-primary">{{ user.email }}</span>
+                                </a>
+                            </td>
+                            <td>{{ user.nomor_hape|default:"-" }}</td>
+                            <td>
+                                <span class="badge bg-light text-dark">
+                                    <i class="fas fa-user-tag text-primary me-1"></i>
+                                    {{ user.get_role_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="badge bg-success bg-opacity-10 text-success">
+                                        <i class="fas fa-check-circle me-1"></i> Aktif
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-danger bg-opacity-10 text-danger">
+                                        <i class="fas fa-times-circle me-1"></i> Nonaktif
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end pe-4">
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a href="{% url 'edit_user' user.id %}" 
+                                       class="btn btn-outline-primary rounded-start-2"
+                                       data-bs-toggle="tooltip" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'delete_user' user.id %}" 
+                                       class="btn btn-outline-danger rounded-end-2"
+                                       onclick="return confirm('Apakah Anda yakin ingin menghapus nasabah ini?')"
+                                       data-bs-toggle="tooltip" title="Hapus">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4 text-muted">
+                                <i class="fas fa-user-times fa-2x mb-2"></i><br>
+                                Tidak ada nasabah yang tersedia
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f7fa;
+    }
+    
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .table {
+        margin-bottom: 0;
+    }
+    
+    .table thead th {
+        border-bottom: none;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        color: #6c757d;
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .table tbody tr:last-child {
+        border-bottom: none;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(46, 204, 113, 0.05);
+        transform: translateY(-1px);
+    }
+    
+    .profile-img-container {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f0f0;
+    }
+    
+    .profile-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .badge {
+        padding: 0.35em 0.65em;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+    
+    .btn-group .btn {
+        padding: 0.25rem 0.5rem;
+    }
+    
+    .input-group-text {
+        border-radius: 8px 0 0 8px !important;
+    }
+    
+    .form-control {
+        border-radius: 0 8px 8px 0 !important;
+    }
+    
+    @media (max-width: 768px) {
+        .card-header h5 {
+            font-size: 1.1rem;
+        }
+        
+        .btn-lg {
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<script>
+    // Initialize tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+    });
+</script>
+
+{% endblock %}

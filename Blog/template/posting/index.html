@@ -1,0 +1,1383 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+
+<!-- Main CSS -->
+<style>
+
+
+/* Base Styles */
+body {
+  font-family: 'Poppins', sans-serif;
+  color: var(--dark-text);
+  background-color: var(--light-gray);
+}
+
+
+
+.navbar-brand {
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.navbar-brand i {
+  color: var(--gold-accent);
+  margin-right: 8px;
+}
+
+.nav-link {
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+  color: var(--gold-accent) !important;
+}
+
+
+
+
+
+/* Cards */
+.card {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+}
+
+/* Buttons */
+.btn-primary {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background-color: #007a3d;
+  border-color: #007a3d;
+  transform: translateY(-2px);
+}
+
+.btn-outline-primary {
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+}
+
+/* Welcome Message Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -55%) scale(0.8); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  to { opacity: 0; transform: translate(-50%, -55%) scale(0.8); }
+}
+
+/* Page Content Animation */
+#page-content {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeSlideIn 1s ease-out forwards;
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Slider/Carousel */
+.carousel {
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.carousel-indicators button {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgba(255,255,255,0.5);
+}
+
+.carousel-indicators .active {
+  background-color: var(--gold-accent);
+}
+
+/* Pengurus Yayasan Cards */
+.team-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(0,0,0,0.05);
+}
+
+.team-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.team-card img {
+  transition: transform 0.5s ease;
+}
+
+.team-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Statistik Cards */
+.stat-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.stat-card i {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+  color: var(--primary-green);
+}
+
+/* Program Cards */
+.program-card {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  height: 100%;
+  transition: all 0.3s ease;
+}
+
+.program-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.1);
+}
+
+.program-card i {
+  font-size: 2.5rem;
+  color: var(--gold-accent);
+  margin-bottom: 1rem;
+}
+
+/* Bank Sampah Cards */
+.bank-card {
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.bank-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+.bank-card img {
+  height: 200px;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.bank-card:hover img {
+  transform: scale(1.05);
+}
+
+/* Enhanced Map Styles */
+.map-container {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+    height: 600px;
+    position: relative;
+    border: 3px solid white;
+}
+
+#leaflet-map {
+    height: 100%;
+    width: 100%;
+    background-color: #f8f9fa; /* Fallback color while tiles load */
+}
+
+/* Popup Customization */
+.leaflet-popup-content-wrapper {
+    border-radius: 12px !important;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2) !important;
+    padding: 0;
+    overflow: hidden;
+}
+
+.leaflet-popup-content {
+    margin: 0;
+    width: auto !important;
+}
+
+.leaflet-popup-tip-container {
+    margin-top: -1px;
+}
+
+.leaflet-popup-tip {
+    box-shadow: none !important;
+}
+
+/* Marker Cluster */
+.marker-cluster-small {
+    background-color: rgba(110, 204, 57, 0.6);
+}
+
+.marker-cluster-small div {
+    background-color: rgba(110, 204, 57, 0.8);
+}
+
+.marker-cluster-medium {
+    background-color: rgba(240, 194, 12, 0.6);
+}
+
+.marker-cluster-medium div {
+    background-color: rgba(240, 194, 12, 0.8);
+}
+
+.marker-cluster-large {
+    background-color: rgba(253, 156, 115, 0.6);
+}
+
+.marker-cluster-large div {
+    background-color: rgba(241, 128, 23, 0.8);
+}
+
+/* Custom Control */
+.leaflet-control-layers {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+.leaflet-control-zoom {
+    border-radius: 8px !important;
+    overflow: hidden;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* Search Control */
+.leaflet-control-search {
+    border-radius: 8px !important;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2) !important;
+}
+
+/* Custom Marker Icons */
+.custom-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Partner Scrolling Section */
+.partner-scroll-container {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    padding: 20px 0;
+}
+
+.partner-track {
+    display: flex;
+    gap: 30px;
+    width: max-content;
+    animation: scroll 30s linear infinite;
+}
+
+.partner-card {
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
+}
+
+.partner-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
+    background-color: #f8f9fa;
+}
+
+.partner-logo-container {
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    background-color: white;
+    border-radius: 12px; /* ubah jika ingin kotak dengan sudut bulat */
+
+}
+.partner-scroll-container {
+    position: relative;
+    overflow: hidden;
+    padding: 20px 0;
+}
+
+/* Overlay sisi kiri */
+.partner-scroll-container::before,
+.partner-scroll-container::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    width: 60px;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.partner-scroll-container::before {
+    left: 0;
+    background: linear-gradient(to right, white, rgba(255,255,255,0));
+}
+
+.partner-scroll-container::after {
+    right: 0;
+    background: linear-gradient(to left, white, rgba(255,255,255,0));
+}
+
+
+.partner-logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    object-position: center;
+    padding: 10px;
+    border: none; /* opsional: hapus border jika tidak dibutuhkan */
+    border-radius: 0; /* biarkan logo tampil apa adanya */
+}
+    
+
+.partner-logo-placeholder {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+}
+
+.partner-name {
+    font-weight: 500;
+    color: var(--dark-gray);
+    text-align: center;
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+}
+
+.partner-website {
+    font-size: 0.8rem;
+    color: var(--primary-green);
+    text-align: center;
+    margin-top: auto;
+}
+
+.partner-no-website {
+    font-size: 0.8rem;
+    color: #6c757d;
+    text-align: center;
+    margin-top: auto;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+/* Pause animation on hover */
+.partner-scroll-container:hover .partner-track {
+    animation-play-state: paused;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .partner-card {
+        flex: 0 0 160px;
+        padding: 15px;
+    }
+    
+    .partner-logo-container {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .partner-name {
+        font-size: 0.8rem;
+    }
+    
+    .partner-website,
+    .partner-no-website {
+        font-size: 0.7rem;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .navbar-brand {
+    font-size: 1.2rem;
+  }
+  
+  .stat-card {
+    padding: 1rem;
+  }
+  
+  .program-card {
+    padding: 1.5rem;
+  }
+}
+    .whatsapp-link:hover {
+        color: #128C7E !important; /* warna hijau gelap saat hover */
+        text-decoration: underline;
+    }
+    .email-link:hover {
+        color: #084298 !important; /* warna biru gelap saat hover */
+        text-decoration: underline;
+    }
+
+.stat-scroll-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 1rem;
+}
+
+.stat-scroll-inner {
+    display: flex;
+    gap: 1rem;
+    justify-content: center; /* Center on large screens */
+    min-width: max-content;
+}
+
+.stat-card {
+    min-width: 200px;
+    flex: 0 0 auto;
+    background-color: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* Responsive: scroll mode on smaller screen */
+@media (max-width: 768px) {
+    .stat-scroll-inner {
+        justify-content: flex-start;
+    }
+}
+
+.pengurus-scroll-container {
+  overflow-x: auto;
+  padding-bottom: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+.pengurus-scroll-inner {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;        /* Center cards secara horizontal */
+  min-width: 600px;
+}
+.team-card {
+  min-width: 250px;
+  max-width: 270px;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 24px rgba(31, 38, 135, 0.12);
+  border: none;
+  background: linear-gradient(135deg, #e0f7fa 70%, #fffde4 100%);
+  transition: transform 0.25s, box-shadow 0.25s;
+}
+.team-card:hover {
+  transform: translateY(-10px) scale(1.045);
+  box-shadow: 0 12px 36px rgba(31,38,135,0.18);
+}
+.team-img {
+  width: 110px;
+  height: 130px;
+  object-fit: cover;
+  box-shadow: 0 4px 14px rgba(52, 152, 219, 0.15);
+}
+.pengurus-scroll-container::-webkit-scrollbar {
+  height: 8px;
+}
+.pengurus-scroll-container::-webkit-scrollbar-thumb {
+  background: #c1e3dd;
+  border-radius: 4px;
+}
+
+/* Mobile: Scrollable, tidak di-center */
+@media (max-width: 991.98px) {
+  .pengurus-scroll-inner {
+    justify-content: flex-start;    /* Scroll, bukan center */
+    min-width: 400px;
+    gap: 1rem;
+  }
+  .team-card {
+    min-width: 70vw;
+    max-width: 80vw;
+  }
+}
+</style>
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+
+<div id="page-content">
+        {# ----- SPONSOR BANNER HERO (Platinum) ----- #}
+    <div class="container mt-3" style="max-width: 970px;">
+      <div class="alert alert-warning text-center p-2 rounded shadow" style="background: #fffbe6; border: 2px solid #ffe58f;">
+        <a href="https://situs-sponsor.com" target="_blank" style="display: inline-block;">
+          <img src="{% static 'img/iklan-sponsor-hero.png' %}" alt="Iklan Sponsor Utama" style="width:100%; max-width:970px; height:auto; object-fit:cover; border-radius:8px;">
+        </a>
+        <div style="font-size:1rem; margin-top:0.5rem; color:#aa8500;">Sponsored by <b>PT Sponsor Terkini</b></div>
+      </div>
+    </div>
+
+    {% if user.is_authenticated %}
+    <div id="welcome-message" class="text-center" role="alert" 
+        style="position: fixed; top: 40%; left: 50%; transform: translate(-50%, -50%);
+               z-index: 1050; width: 250px; height: 250px; border-radius: 50%;
+               display: flex; align-items: center; justify-content: center; flex-direction: column;
+               box-shadow: 0px 6px 20px rgba(0,0,0,0.3); animation: fadeIn 0.5s ease-in-out;
+               text-align: center; font-size: 18px; padding: 20px; background: linear-gradient(135deg, var(--primary-green), #007a3d);
+               color: white; font-weight: bold; opacity: 1; transition: opacity 1s ease-out;">
+        
+        <i class="fas fa-check-circle fa-3x" style="color: var(--gold-accent); margin-bottom: 10px;"></i> 
+        <span>Selamat datang <strong>{{ user.username }}</strong>,</span>
+        <span>Anda berhasil masuk</span>
+    </div>
+    {% endif %}
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let welcomeMessage = document.getElementById("welcome-message");
+
+            // Check if this is a new login session
+            if (sessionStorage.getItem("userLoggedIn") !== "{{ user.username }}") {
+                sessionStorage.setItem("userLoggedIn", "{{ user.username }}"); // Save logged-in username
+                sessionStorage.setItem("welcomeShown", "false"); // Reset Welcome message
+            }
+
+            // Display message if not shown before
+            if (sessionStorage.getItem("welcomeShown") === "false") {
+                sessionStorage.setItem("welcomeShown", "true"); // Mark as displayed
+
+                setTimeout(function () {
+                    if (welcomeMessage) {
+                        welcomeMessage.style.opacity = "0"; // Fade out effect
+                        setTimeout(() => {
+                            welcomeMessage.style.display = "none";
+                        }, 1000); // Remove after fade-out effect (1 second)
+                    }
+                }, 3000); // Start fade out after 3 seconds
+            } else {
+                if (welcomeMessage) {
+                    welcomeMessage.style.display = "none"; // Hide if already displayed
+                }
+            }
+
+            // Clear sessionStorage on logout to show message again on next login
+            document.querySelectorAll("a[href*='logout']").forEach(function (logoutLink) {
+                logoutLink.addEventListener("click", function () {
+                    sessionStorage.clear(); // Clear all sessionStorage on logout
+                });
+            });
+        });
+    </script>
+
+    <!-- Slider Section -->
+    <div id="carouselExampleCaptions" class="carousel slide carousel-fade mt-3 mb-5" data-bs-ride="carousel" 
+        style="max-width: 970px; margin: auto; border-radius: 15px; overflow: hidden;">
+
+        <!-- Indicators -->
+        <div class="carousel-indicators">
+            {% for slide in slider_data %}
+            <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="{{ forloop.counter0 }}" 
+                {% if forloop.first %}class="active"{% endif %} aria-label="Slide {{ forloop.counter }}"></button>
+            {% endfor %}
+        </div>
+
+        <!-- Carousel Content -->
+        <div class="carousel-inner">
+            {% for slide in slider_data %}
+            <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                <img src="{{ slide.image.url }}" class="d-block w-100" alt="{{ slide.title }}" 
+                    style="aspect-ratio: 1000 / 667; width: 100%; height: auto; object-fit: cover;">
+                <div class="carousel-caption d-none d-md-block bg-dark bg-opacity-75 p-3 rounded">
+                    <h3 class="text-white">{{ slide.title }}</h3>
+                    <p class="text-white">{{ slide.description }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Navigation Buttons -->
+        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Next</span>
+        </button>
+    </div>
+
+        {# ----- SPONSOR BANNER TENGAH ----- #}
+    <div class="container my-4" style="max-width:970px;">
+      <div class="alert alert-info text-center p-2 rounded shadow" style="background: #e6f7ff; border: 2px solid #91d5ff;">
+        <a href="https://website-sponsor.com" target="_blank">
+          <img src="{% static 'img/iklan-sponsor-tengah.png' %}" alt="Iklan Sponsor Tengah" style="width:100%; max-width:970px; height:auto; border-radius:8px;">
+        </a>
+        <div style="font-size:0.95rem; color:#096dd9;">Disponsori oleh <b>Sponsor Menarik</b></div>
+      </div>
+    </div>
+<!-- Pengurus Yayasan Section -->
+<section id="pengurus" class="py-5 bg-light">
+  <div class="container">
+    <h2 class="fw-bold text-center mb-5">Pengurus Yayasan</h2>
+    <div class="pengurus-scroll-container">
+      <div class="pengurus-scroll-inner">
+
+        <!-- Ketua -->
+        <div class="card team-card text-center">
+          <div class="card-body">
+            <img src="{% static 'img/Cindy.jpeg' %}" alt="Cindy Cilya Stacy Langitan"
+                 class="img-fluid rounded-circle mb-3 team-img">
+            <h5 class="card-title mb-2">Ketua</h5>
+            <p class="fw-bold mb-1">Cindy Cilya Stacy Langitan</p>
+            <p class="mb-1">
+              <i class="fas fa-phone me-2" style="color: #25D366;"></i>
+              <a href="https://wa.me/0811430658" target="_blank"
+                class="text-decoration-none text-success fw-semibold whatsapp-link">
+                0811430658
+              </a>
+            </p>
+            <p class="mb-0">
+              <i class="fas fa-envelope me-2" style="color: #0d6efd;"></i>
+              <a href="mailto:cindycillya@gmail.com" class="text-decoration-none text-primary fw-semibold email-link">
+                cindycillya@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Sekretaris Umum -->
+        <div class="card team-card text-center">
+          <div class="card-body">
+            <img src="{% static 'img/Marlon.jpeg' %}" alt="Marlon Edwin Kamagi"
+                 class="img-fluid rounded-circle mb-3 team-img">
+            <h5 class="card-title mb-2">Sekretaris Umum</h5>
+            <p class="fw-bold mb-1">Marlon Edwin Kamagi, SE, MSi</p>
+            <p class="mb-1">
+              <i class="fas fa-phone me-2" style="color: #25D366;"></i>
+              <a href="https://wa.me/081356198513" target="_blank"
+                class="text-decoration-none text-success fw-semibold whatsapp-link">
+                081356198513
+              </a>
+            </p>
+            <p class="mb-0">
+              <i class="fas fa-envelope me-2" style="color: #0d6efd;"></i>
+              <a href="mailto:markcomdev@gmail.com" class="text-decoration-none text-primary fw-semibold email-link">
+                markcomdev@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Bendahara Umum -->
+        <div class="card team-card text-center">
+          <div class="card-body">
+            <img src="{% static 'img/Michael.jpeg' %}" alt="Michael Arter Pondaag"
+                 class="img-fluid rounded-circle mb-3 team-img">
+            <h5 class="card-title mb-2">Bendahara Umum</h5>
+            <p class="fw-bold mb-1">Michael Arter Pondaag</p>
+            <p class="mb-1">
+              <i class="fas fa-phone me-2" style="color: #25D366;"></i>
+              <a href="https://wa.me/082345067888" target="_blank"
+                class="text-decoration-none text-success fw-semibold whatsapp-link">
+                082345067888
+              </a>
+            </p>
+            <p class="mb-0">
+              <i class="fas fa-envelope me-2" style="color: #0d6efd;"></i>
+              <a href="mailto:forbosnia@gmail.com" class="text-decoration-none text-primary fw-semibold email-link">
+                forbosnia@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+
+        <!-- Ketua Pengawas -->
+        <div class="card team-card text-center">
+          <div class="card-body">
+            <img src="{% static 'img/Sharon.jpeg' %}" alt="Sharon Monica Ngantung"
+                 class="img-fluid rounded-circle mb-3 team-img">
+            <h5 class="card-title mb-2">Ketua Pengawas</h5>
+            <p class="fw-bold mb-1">Sharon Monica Ngantung</p>
+            <p class="mb-1">
+              <i class="fas fa-phone me-2" style="color: #25D366;"></i>
+              <a href="https://wa.me/082292052233" target="_blank"
+                class="text-decoration-none text-success fw-semibold whatsapp-link">
+                082292052233
+              </a>
+            </p>
+            <p class="mb-0">
+              <i class="fas fa-envelope me-2" style="color: #0d6efd;"></i>
+              <a href="mailto:sharonmonica93@gmail.com" class="text-decoration-none text-primary fw-semibold email-link">
+                sharonmonica93@gmail.com
+              </a>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+ 
+
+<!-- Tentang Kami Section --> 
+<section id="tentang-kami" class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold">Tentang Kami</h2>
+            <p class="text-muted">
+                Kami berkomitmen memberikan solusi berkelanjutan untuk pengelolaan sampah dan daur ulang.
+            </p>
+        </div>
+
+        <!-- Visi Misi -->
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-5 mb-4 mb-md-0">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold text-success mb-3"><i class="fas fa-leaf me-2"></i>Visi</h4>
+                        <p class="mb-0 fs-5">Bumi yang Lestari,<br>Masyarakat Sejahtera</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-7">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h4 class="fw-bold text-primary mb-3"><i class="fas fa-bullseye me-2"></i>Misi</h4>
+                        <ul class="mb-0 fs-6 ps-3" style="list-style: disc;">
+                            <li>Mendukung upaya pelestarian lingkungan dengan prinsip pembangunan berkelanjutan.</li>
+                            <li>Berkontribusi dalam bidang pendidikan lingkungan hidup, khususnya peningkatan keterampilan (Green Skill).</li>
+                            <li>Membangun ekosistem berkelanjutan dengan mekanisme kolaborasi.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistik Scrollable & Centered -->
+        <div class="stat-scroll-container mt-5">
+            <div class="stat-scroll-inner">
+                <div class="stat-card text-center">
+                    <i class="fas fa-users fa-2x mb-3"></i>
+                    <h5 class="fw-bold text-muted">Total Nasabah</h5>
+                    <p class="fs-3 fw-bold" style="color: var(--primary-green);">{{ total_nasabah }}</p>
+                </div>
+                <div class="stat-card text-center">
+                    <i class="fas fa-coins fa-2x mb-3"></i>
+                    <h5 class="fw-bold text-muted">Total Poin</h5>
+                    <p class="fs-3 fw-bold" style="color: var(--dark-gold);">{{ total_poin }}</p>
+                </div>
+                <div class="stat-card text-center">
+                    <i class="fas fa-trash-alt fa-2x mb-3"></i>
+                    <h5 class="fw-bold text-muted">Total Sampah (kg)</h5>
+                    <p class="fs-3 fw-bold" style="color: var(--primary-green);">{{ total_sampah }}</p>
+                </div>
+                <div class="stat-card text-center">
+                    <i class="fas fa-recycle fa-2x mb-3"></i>
+                    <h5 class="fw-bold text-muted">Total Bank Sampah</h5>
+                    <p class="fs-3 fw-bold" style="color: var(--dark-gold);">{{ total_bank }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+    <!-- Program Kami Section -->
+    <section id="program" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Program Kami</h2>
+            </div>
+
+            <div class="d-flex overflow-auto gap-3" style="scroll-snap-type: x mandatory; scroll-behavior: smooth;">
+                <!-- Link Program dari Database -->
+                {% for link in links %}
+                    <div class="program-card p-3 border rounded shadow-sm d-flex flex-column"
+                        style="min-width: 350px; max-width: 350px; height: 400px; scroll-snap-align: start;">
+
+                        <!-- Bagian isi yang mengisi ruang -->
+                        <div style="flex-grow: 1; overflow: hidden; display: flex; flex-direction: column;">
+                            <!-- Batasi judul -->
+                            <h5 class="fw-bold mb-3"
+                                style="
+                                    max-height: 3.6em;  /* kira-kira 2 baris */
+                                    overflow: hidden;
+                                    text-overflow: ellipsis;
+                                    display: -webkit-box;
+                                    -webkit-line-clamp: 2;
+                                    -webkit-box-orient: vertical;
+                                ">
+                                {{ link.judul }}
+                            </h5>
+
+                            <div style="flex-grow: 1; overflow: hidden; min-height: 250px;">
+                                <iframe
+                                    src="{{ link.url }}"
+                                    style="border: none; width: 100%; height: 100%; display: block;"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                    sandbox="allow-scripts allow-same-origin allow-popups"
+                                ></iframe>
+                            </div>
+                        </div>
+
+                        <!-- Tombol Lihat Selengkapnya di bawah -->
+                        <a href="{{ link.url }}" target="_blank" class="btn btn-outline-primary btn-sm mt-3" style="align-self: start;">
+                            Lihat Selengkapnya
+                        </a>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted">Belum ada program yang ditambahkan.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Publikasi Section -->
+    <section id="publication" class="py-5 bg-light">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-5">Publikasi</h2>
+
+            <!-- Video YouTube -->
+            <div class="card shadow-sm p-3 mb-5 mx-auto" style="max-width: 800px;">
+                <h5 class="fw-bold mb-3">Tonton Video Terbaru Kami</h5>
+                <div class="ratio ratio-16x9">
+                    <iframe src="https://www.youtube.com/embed/vIT2VGl0VyA" title="YouTube video player" frameborder="0" allowfullscreen></iframe>
+                </div>
+            </div>
+
+            <!-- Social Media Buttons -->
+            <div class="mt-5">
+                <h5 class="fw-bold mb-4">Ikuti Kami di Media Sosial</h5>
+                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                    <!-- Instagram -->
+                    <a href="https://www.instagram.com/trashrecyclecenter/" target="_blank" class="btn btn-outline-danger btn-lg">
+                        <i class="fab fa-instagram me-2"></i> Instagram
+                    </a>
+
+                    <!-- Facebook -->
+                    <a href="https://www.facebook.com/profile.php?id=61558741800896" target="_blank" class="btn btn-outline-primary btn-lg">
+                        <i class="fab fa-facebook me-2"></i> Facebook
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Bank Sampah Section -->
+    <section id="bank-sampah" class="py-5">
+        <div class="container text-center">
+            <h2 class="fw-bold mb-4">Daftar Bank Sampah</h2>
+
+            <!-- Form Pencarian -->
+            <form id="search-form" class="d-flex justify-content-center mb-4" method="GET">
+                <div class="input-group" style="max-width: 500px;">
+                    <input type="text" name="q" class="form-control" placeholder="Cari Bank Sampah..." value="{{ request.GET.q }}">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+            </form>
+
+            <!-- Daftar Bank Sampah -->
+            <div id="bank-sampah-list" class="row mt-4 g-4">
+                {% for bank in nama_bank %}
+                <div class="col-md-4">
+                    <div class="card bank-card h-100">
+                        {% if bank.profile_picture %}
+                        <img src="{{ bank.profile_picture.url }}" class="card-img-top" alt="Foto {{ bank.nama_bank }}">
+                        {% else %}
+                        <img src="{% static 'img/default-profile.png' %}" class="card-img-top" alt="Foto Default">
+                        {% endif %}
+                        <div class="card-body text-center">
+                            <h5 class="card-title">{{ bank.nama_bank }}</h5>
+                            <p class="text-muted">{{ bank.address }}</p>
+                            <a href="{% url 'detail_bank' bank.id %}" class="btn btn-primary">
+                                <i class="fas fa-info-circle me-2"></i> Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+                        {% if nama_bank.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link bank-pagination" href="?nama_bank_page=1{% if query %}&q={{ query }}{% endif %}" aria-label="First">
+                                <span aria-hidden="true">&laquo;&laquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link bank-pagination" href="?nama_bank_page={{ nama_bank.previous_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+            
+                        <li class="page-item disabled">
+                            <span class="page-link">Page {{ nama_bank.number }} of {{ nama_bank.paginator.num_pages }}</span>
+                        </li>
+            
+                        {% if nama_bank.has_next %}
+                        <li class="page-item">
+                            <a class="page-link bank-pagination" href="?nama_bank_page={{ nama_bank.next_page_number }}{% if query %}&q={{ query }}{% endif %}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link bank-pagination" href="?nama_bank_page={{ nama_bank.paginator.num_pages }}{% if query %}&q={{ query }}{% endif %}" aria-label="Last">
+                                <span aria-hidden="true">&raquo;&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lokasi Section -->
+    <section id="location" class="section section-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="section-title">Lokasi Kami</h2>
+                <p class="section-subtitle">Temukan bank sampah terdekat di peta interaktif kami</p>
+            </div>
+
+            <div class="map-container mb-5">
+                <div id="leaflet-map"></div>
+            </div>
+
+            <!-- Penjelasan Icon -->
+            <div class="text-center">
+                <h5 class="fw-bold mb-4">Keterangan Ikon</h5>
+                <div class="d-flex justify-content-center flex-wrap gap-4">
+                    <div class="d-flex align-items-center gap-2 bg-white p-3 rounded-3 shadow-sm">
+                        <i class="fa-solid fa-recycle" style="color: #FF5733; font-size: 24px;"></i>
+                        <span>Bank Sampah Unit</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 bg-white p-3 rounded-3 shadow-sm">
+                        <i class="fas fa-building" style="color: #007BFF; font-size: 24px;"></i>
+                        <span>Yayasan Pengelola</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 bg-white p-3 rounded-3 shadow-sm">
+                        <i class="fas fa-warehouse" style="color: #28a745; font-size: 24px;"></i>
+                        <span>Bank Sampah Induk</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+<!-- Partner Section -->
+<section id="mitra" class="py-5">
+    <div class="container">
+        <h2 class="fw-bold text-center mb-5">Mitra Kami</h2>
+        
+        <div class="partner-scroll-container">
+            <div class="partner-track">
+                {% for mitra in mitra_data %}
+                <a href="{{ mitra.website }}" target="_blank" class="partner-card" 
+                   {% if not mitra.website %}style="pointer-events: none; cursor: default;"{% endif %}>
+                    <div class="partner-logo-container">
+                        {% if mitra.logo %}
+                        <img src="{{ mitra.logo.url }}" alt="{{ mitra.nama }}" class="partner-logo">
+                        {% else %}
+                        <div class="partner-logo-placeholder">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="partner-name">{{ mitra.nama }}</h5>
+                    {% if mitra.website %}
+                    <div class="partner-website">
+                        <i class="fas fa-external-link-alt"></i> Kunjungi Website
+                    </div>
+                    {% else %}
+                    <div class="partner-no-website">
+                        <i class="fas fa-unlink"></i> Tidak ada website
+                    </div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+                
+                <!-- Duplicate for seamless looping -->
+                {% for mitra in mitra_data %}
+                <a href="{{ mitra.website }}" target="_blank" class="partner-card" 
+                   {% if not mitra.website %}style="pointer-events: none; cursor: default;"{% endif %}>
+                    <div class="partner-logo-container">
+                        {% if mitra.logo %}
+                        <img src="{{ mitra.logo.url }}" alt="{{ mitra.nama }}" class="partner-logo">
+                        {% else %}
+                        <div class="partner-logo-placeholder">
+                            <i class="fas fa-building"></i>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <h5 class="partner-name">{{ mitra.nama }}</h5>
+                    {% if mitra.website %}
+                    <div class="partner-website">
+                        <i class="fas fa-external-link-alt"></i> Kunjungi Website
+                    </div>
+                    {% else %}
+                    <div class="partner-no-website">
+                        <i class="fas fa-unlink"></i> Tidak ada website
+                    </div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+    {# ----- FOOTER LOGO SPONSOR ----- #}
+    <footer class="mt-5 py-4 bg-light border-top">
+      <div class="container d-flex flex-wrap justify-content-center align-items-center gap-2">
+        <span>Powered by:</span>
+        <a href="https://web-footer-sponsor.com" target="_blank" style="display:inline-block;">
+          <img src="{% static 'img/logo-footer-sponsor.png' %}" alt="Logo Sponsor Footer" style="height:32px;">
+        </a>
+        <!-- Bisa tambah logo sponsor lain di sini -->
+      </div>
+    </footer>
+
+    <!-- Leaflet.js -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const map = L.map('leaflet-map', {
+        zoomControl: false,
+        preferCanvas: true
+    }).setView([1.490058, 124.840871], 13);
+
+    const osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 19
+    });
+
+    const osmHumanitarian = L.tileLayer('https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Tiles by Humanitarian OSM Team',
+        maxZoom: 19
+    });
+
+    const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: 'Tiles &copy; Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        maxZoom: 19
+    });
+
+    osmLayer.addTo(map);
+
+    const baseLayers = {
+        "OpenStreetMap Standard": osmLayer,
+        "Humanitarian Style": osmHumanitarian,
+        "Satellite View": satelliteLayer
+    };
+
+    L.control.layers(baseLayers, null, {
+        position: 'topright',
+        collapsed: false
+    }).addTo(map);
+
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    L.control.scale({
+        position: 'bottomleft',
+        imperial: false,
+        maxWidth: 200
+    }).addTo(map);
+
+    const markers = [
+        {% for marker in marker_data %}
+        {
+            lat: {{ marker.lat }},
+            lng: {{ marker.lng }},
+            nama: "{{ marker.nama|escapejs }}",
+            id: "{{ marker.id }}",
+            role: "{{ marker.role }}",
+            profile_picture: "{% if marker.profile_picture %}{{ marker.profile_picture.url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}",
+            address: "{{ marker.address|escapejs|default:'' }}"
+        },
+        {% endfor %}
+    ];
+
+    function createCustomIcon(iconClass, iconColor) {
+        return L.divIcon({
+            className: 'custom-icon',
+            html: `<div style="
+                background: white;
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+                border: 2px solid ${iconColor}">
+                <i class="fas ${iconClass}" style="color: ${iconColor}; font-size: 16px;"></i>
+            </div>`,
+            iconSize: [36, 36],
+            iconAnchor: [18, 18],
+            popupAnchor: [0, -18]
+        });
+    }
+
+    markers.forEach(function (marker) {
+        let iconColor, iconClass, markerType;
+
+        if (marker.role === 'admin_unit') {
+            iconColor = '#FF5733';
+            iconClass = 'fa-recycle';
+            markerType = 'Bank Sampah Unit';
+        } else if (marker.role === 'admin_yayasan') {
+            iconColor = '#007BFF';
+            iconClass = 'fa-building';
+            markerType = 'Yayasan Pengelola';
+        } else if (marker.role === 'admin_induk') {
+            iconColor = '#28a745';
+            iconClass = 'fa-warehouse';
+            markerType = 'Bank Sampah Induk';
+        }
+
+        const customIcon = createCustomIcon(iconClass, iconColor);
+
+        const markerObj = L.marker([marker.lat, marker.lng], {
+            icon: customIcon,
+            riseOnHover: true
+        }).addTo(map);
+
+        const popupContent = `
+            <div class="map-popup" style="width: 250px;">
+                <div class="popup-header" style="
+                    background: ${iconColor};
+                    color: white;
+                    padding: 10px 15px;
+                    font-weight: bold;
+                    display: flex;
+                    align-items: center;
+                    gap: 10px;">
+                    <i class="fas ${iconClass}"></i>
+                    <span>${markerType}</span>
+                </div>
+                <div class="popup-body" style="padding: 15px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                        <img src="${marker.profile_picture}" alt="Profile" 
+                            style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid ${iconColor}">
+                        <div>
+                            <h5 style="margin: 0; font-weight: bold; color: #333;">${marker.nama}</h5>
+                            ${marker.address ? `<p style="margin: 5px 0 0; font-size: 12px; color: #666;">${marker.address}</p>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 8px; margin-top: 10px;">
+                        <a href="/detail_bank/${marker.id}/" 
+                          class="btn btn-sm" 
+                          style="
+                            background: ${iconColor};
+                            color: white;
+                            border: none;
+                            padding: 5px 10px;
+                            border-radius: 5px;
+                            text-decoration: none;
+                            font-size: 12px;
+                            flex: 1;
+                            text-align: center;">
+                            <i class="fas fa-info-circle me-1"></i> Detail
+                        </a>
+                        <a href="https://www.google.com/maps/dir/?api=1&destination=${marker.lat},${marker.lng}" 
+                          target="_blank" 
+                          class="btn btn-sm" 
+                          style="
+                            background: white;
+                            color: #333;
+                            border: 1px solid #ddd;
+                            padding: 5px 10px;
+                            border-radius: 5px;
+                            text-decoration: none;
+                            font-size: 12px;
+                            flex: 1;
+                            text-align: center;">
+                            <i class="fas fa-directions me-1"></i> Navigasi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        markerObj.bindPopup(popupContent, {
+            maxWidth: 300,
+            className: 'custom-popup',
+            autoClose: false,
+            closeOnClick: false
+        });
+
+        // Click to open popup (works better on mobile)
+        markerObj.on('click', function () {
+            this.openPopup();
+        });
+    });
+
+    if (markers.length > 0) {
+        const markerGroup = new L.featureGroup(
+            markers.map(marker => L.marker([marker.lat, marker.lng]))
+        );
+        map.fitBounds(markerGroup.getBounds().pad(0.1));
+    }
+});
+</script>
+
+
+</script>
+    <!-- AJAX for Bank Sampah Search -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+    $(document).ready(function(){
+        function loadBankSampah(url) {
+            $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data){
+                    var newBankList = $(data).find('#bank-sampah-list').html();
+                    var newPagination = $(data).find('.pagination').html();
+                    $('#bank-sampah-list').html(newBankList);
+                    $('.pagination').html(newPagination);
+                },
+                error: function(){
+                    alert('Gagal memuat data, coba lagi.');
+                }
+            });
+        }
+
+        $(document).on('click', '.bank-pagination', function(e){
+            e.preventDefault();
+            var url = $(this).attr('href');
+            loadBankSampah(url);
+        });
+
+        $('#search-form').on('submit', function(e){
+            e.preventDefault();
+            var query = $(this).serialize();
+            var url = "?" + query;
+            loadBankSampah(url);
+        });
+    });
+    </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const track = document.querySelector('.partner-track');
+    const container = document.querySelector('.partner-scroll-container');
+    
+    // Only duplicate items if there are partners
+    if (track.children.length > 0) {
+        // Clone items for seamless looping
+        const items = track.querySelectorAll('.partner-card');
+        items.forEach(item => {
+            const clone = item.cloneNode(true);
+            track.appendChild(clone);
+        });
+        
+        // Adjust animation duration based on number of items
+        const itemCount = items.length;
+        const duration = itemCount * 2; // 2 seconds per item
+        track.style.animationDuration = `${duration}s`;
+        
+        // Reset animation when it completes
+        track.addEventListener('animationiteration', () => {
+            track.style.animation = 'none';
+            void track.offsetWidth; // Trigger reflow
+            track.style.animation = `scroll ${duration}s linear infinite`;
+        });
+    }
+    
+    // Pause/play on hover
+    container.addEventListener('mouseenter', () => {
+        track.style.animationPlayState = 'paused';
+    });
+    
+    container.addEventListener('mouseleave', () => {
+        track.style.animationPlayState = 'running';
+    });
+    
+    // Add click effect
+    const cards = document.querySelectorAll('.partner-card');
+    cards.forEach(card => {
+        card.addEventListener('mousedown', () => {
+            card.style.transform = 'translateY(-2px) scale(0.98)';
+        });
+        
+        card.addEventListener('mouseup', () => {
+            card.style.transform = 'translateY(-5px)';
+        });
+        
+        card.addEventListener('mouseleave', () => {
+            card.style.transform = '';
+        });
+    });
+});
+</script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</div>
+{% endblock %}

@@ -1,0 +1,743 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="edit-user-container">
+    <div class="edit-user-card">
+        <!-- Header Section -->
+        <div class="edit-user-header">
+            <div class="header-icon">
+                <i class="fas fa-user-edit"></i>
+            </div>
+            <h1>Edit Data Pengguna</h1>
+            <p>Perbarui informasi pengguna bank sampah</p>
+        </div>
+
+        <!-- Notification Messages -->
+        {% if messages %}
+        <div class="notification-container">
+            {% for message in messages %}
+            <div class="notification {{ message.tags }}">
+                <i class="fas 
+                    {% if message.tags == 'success' %}fa-check-circle
+                    {% elif message.tags == 'error' %}fa-exclamation-circle
+                    {% else %}fa-info-circle{% endif %}"></i>
+                <span>{{ message }}</span>
+                <button class="notification-close" onclick="this.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Profile Picture Upload -->
+        <div class="profile-upload-container">
+            <div class="profile-preview-wrapper">
+                <label for="profile_picture" class="profile-upload-label">
+                    <img id="profile-preview" 
+                         src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}" 
+                         alt="Foto Profil" 
+                         class="profile-image">
+                    <div class="upload-overlay">
+                        <i class="fas fa-camera"></i>
+                        <span>Ubah Foto</span>
+                    </div>
+                </label>
+                <input type="file" name="profile_picture" id="profile_picture" class="profile-upload-input">
+            </div>
+            <p class="upload-hint">Format JPG/PNG, maksimal 2MB</p>
+        </div>
+
+        <!-- Main Form -->
+        <form method="post" class="edit-user-form" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Form Fields -->
+            {% for field in form %}
+                {% if field.name != 'profile_picture' and field.name != 'titik' %}
+                <div class="form-group {% if field.errors %}has-error{% endif %}">
+                    <label for="{{ field.auto_id }}" class="form-label">
+                        {% if field.name == "username" %} Nama Pengguna
+                        {% elif field.name == "nama_bank" %} Nama Bank Sampah
+                        {% elif field.name == "email" %} Email
+                        {% elif field.name == "nomor_hape" %} Nomor Telepon
+                        {% elif field.name == "address" %} Alamat
+                        {% elif field.name == "is_active" %} Status Akun
+                        {% else %} {{ field.label }} {% endif %}
+                    </label>
+                    
+                    {% if field.name == "is_active" %}
+                        <div class="toggle-container">
+                            <div class="toggle-switch">
+                                {{ field }}
+                                <span class="toggle-slider"></span>
+                            </div>
+                            <label class="toggle-label" for="{{ field.auto_id }}">
+                                {% if field.value %}Aktif{% else %}Nonaktif{% endif %}
+                            </label>
+                        </div>
+                    {% else %}
+                        <div class="input-field">
+                            {% if field.name == "username" %}
+                                <i class="fas fa-user"></i>
+                            {% elif field.name == "nama_bank" %}
+                                <i class="fas fa-id-card"></i>
+                            {% elif field.name == "email" %}
+                                <i class="fas fa-envelope"></i>
+                            {% elif field.name == "nomor_hape" %}
+                                <i class="fas fa-phone"></i>
+                            {% elif field.name == "address" %}
+                                <i class="fas fa-map-marker-alt"></i>
+                            {% endif %}
+                            
+                            {{ field }}
+                        </div>
+                    {% endif %}
+                    
+                    {% for error in field.errors %}
+                        <div class="error-message">
+                            <i class="fas fa-exclamation-circle"></i>
+                            {{ error }}
+                        </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            <!-- Map Section -->
+            <div class="form-group">
+                <label class="form-label">Lokasi Bank Sampah</label>
+                <div class="map-container">
+                    <div id="map" class="location-map"></div>
+                    <input type="hidden" id="id_titik" name="titik" value="{{ form.initial.titik|default:'' }}">
+                    <div class="map-instruction">
+                        <i class="fas fa-info-circle"></i>
+                        Klik pada peta atau geser marker untuk menentukan lokasi
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="save-button">
+                    <i class="fas fa-save"></i>
+                    <span>Simpan Perubahan</span>
+                    <div class="loading-spinner"></div>
+                </button>
+                <a href="{% url 'manage_users' %}" class="cancel-button">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Kembali</span>
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet Geocoder CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<!-- Custom Styles -->
+<style>
+    :root {
+        --primary: #009345;
+        --primary-dark: #007a3a;
+        --primary-light: #e6f5ec;
+        --gold: #F2C84B;
+        --gold-dark: #B88A2F;
+        --text-dark: #2d3748;
+        --text-medium: #4a5568;
+        --text-light: #718096;
+        --border-color: #e2e8f0;
+        --bg-light: #f8fafc;
+        --success: #38a169;
+        --error: #e53e3e;
+        --warning: #dd6b20;
+        --info: #3182ce;
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
+        --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --transition: all 0.3s ease;
+    }
+
+    /* Base Styles */
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f7fa;
+    }
+
+    h1, h2, h3, h4 {
+        font-family: 'Poppins', sans-serif;
+        font-weight: 600;
+        color: var(--text-dark);
+    }
+
+    /* Main Container */
+    .edit-user-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        padding: 2rem;
+        background-color: var(--bg-light);
+    }
+
+    /* Form Card */
+    .edit-user-card {
+        width: 100%;
+        max-width: 800px;
+        background: white;
+        border-radius: var(--radius-lg);
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        animation: fadeInUp 0.5s ease;
+    }
+
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Form Header */
+    .edit-user-header {
+        padding: 2rem 2rem 1rem;
+        text-align: center;
+        background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+        color: white;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255, 255, 255, 0.2);
+        color: white;
+        border-radius: 50%;
+        font-size: 1.5rem;
+    }
+
+    .edit-user-header h1 {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+        color: white;
+    }
+
+    .edit-user-header p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 0.9rem;
+    }
+
+    /* Notification Container */
+    .notification-container {
+        padding: 0 2rem;
+    }
+
+    .notification {
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    .notification i {
+        margin-right: 0.5rem;
+    }
+
+    .notification.success {
+        background-color: #f0fff4;
+        color: var(--success);
+        border-left: 4px solid var(--success);
+    }
+
+    .notification.error {
+        background-color: #fff5f5;
+        color: var(--error);
+        border-left: 4px solid var(--error);
+    }
+
+    .notification.warning {
+        background-color: #fffaf0;
+        color: var(--warning);
+        border-left: 4px solid var(--warning);
+    }
+
+    .notification.info {
+        background-color: #ebf8ff;
+        color: var(--info);
+        border-left: 4px solid var(--info);
+    }
+
+    .notification-close {
+        margin-left: auto;
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: var(--transition);
+    }
+
+    .notification-close:hover {
+        opacity: 1;
+    }
+
+    /* Profile Upload Section */
+    .profile-upload-container {
+        padding: 1rem 2rem;
+        text-align: center;
+    }
+
+    .profile-preview-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid white;
+        box-shadow: var(--shadow-md);
+        transition: var(--transition);
+    }
+
+    .profile-upload-label {
+        display: inline-block;
+        cursor: pointer;
+        position: relative;
+    }
+
+    .profile-upload-label:hover .profile-image {
+        transform: scale(1.05);
+    }
+
+    .upload-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: var(--transition);
+    }
+
+    .profile-upload-label:hover .upload-overlay {
+        opacity: 1;
+    }
+
+    .upload-overlay i {
+        font-size: 1.2rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .upload-overlay span {
+        font-size: 0.7rem;
+    }
+
+    .profile-upload-input {
+        display: none;
+    }
+
+    .upload-hint {
+        color: var(--text-light);
+        font-size: 0.8rem;
+    }
+
+    /* Main Form */
+    .edit-user-form {
+        padding: 0 2rem 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.25rem;
+    }
+
+    .form-group.has-error .input-field {
+        border-color: var(--error);
+    }
+
+    .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--text-dark);
+        font-size: 0.9rem;
+    }
+
+    .input-field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-sm);
+        padding: 0.5rem 0.75rem;
+        transition: var(--transition);
+        background-color: white;
+    }
+
+    .input-field:hover {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 147, 69, 0.1);
+    }
+
+    .input-field:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(0, 147, 69, 0.2);
+    }
+
+    .input-field i {
+        color: var(--gold-dark);
+        margin-right: 0.75rem;
+        font-size: 1rem;
+        min-width: 16px;
+    }
+
+    .input-field input,
+    .input-field select,
+    .input-field textarea {
+        flex: 1;
+        border: none;
+        outline: none;
+        background: transparent;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        color: var(--text-dark);
+        padding: 0.25rem 0;
+    }
+
+    .input-field select {
+        appearance: none;
+        cursor: pointer;
+    }
+
+    /* Toggle Switch */
+    .toggle-container {
+        display: flex;
+        align-items: center;
+    }
+
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 24px;
+        margin-right: 0.75rem;
+    }
+
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: var(--transition);
+        border-radius: 34px;
+    }
+
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        transition: var(--transition);
+        border-radius: 50%;
+    }
+
+    input:checked + .toggle-slider {
+        background-color: var(--primary);
+    }
+
+    input:checked + .toggle-slider:before {
+        transform: translateX(26px);
+    }
+
+    .toggle-label {
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        cursor: pointer;
+    }
+
+    /* Error Message */
+    .error-message {
+        margin-top: 0.5rem;
+        color: var(--error);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .error-message i {
+        margin-right: 0.25rem;
+        font-size: 0.7rem;
+    }
+
+    /* Map Container */
+    .map-container {
+        border-radius: var(--radius-sm);
+        overflow: hidden;
+        box-shadow: var(--shadow-sm);
+    }
+
+    .location-map {
+        height: 250px;
+        width: 100%;
+    }
+
+    .map-instruction {
+        padding: 0.5rem;
+        background-color: var(--bg-light);
+        color: var(--text-medium);
+        font-size: 0.8rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .map-instruction i {
+        margin-right: 0.5rem;
+        color: var(--primary);
+    }
+
+    /* Form Actions */
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+    }
+
+    .save-button,
+    .cancel-button {
+        flex: 1;
+        padding: 0.75rem;
+        border-radius: var(--radius-sm);
+        font-weight: 500;
+        font-size: 0.9rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: var(--transition);
+        border: none;
+    }
+
+    .save-button {
+        background-color: var(--primary);
+        color: white;
+    }
+
+    .save-button:hover {
+        background-color: var(--primary-dark);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .cancel-button {
+        background-color: white;
+        color: var(--text-medium);
+        border: 1px solid var(--border-color);
+        text-decoration: none;
+    }
+
+    .cancel-button:hover {
+        background-color: var(--bg-light);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        display: none;
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        border-top-color: white;
+        animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .save-button.loading .loading-spinner {
+        display: block;
+    }
+
+    .save-button.loading span {
+        display: none;
+    }
+
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+        .edit-user-container {
+            padding: 1rem;
+        }
+        
+        .edit-user-header {
+            padding: 1.5rem 1rem 0.5rem;
+        }
+        
+        .profile-upload-container,
+        .edit-user-form {
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+        
+        .form-actions {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .header-icon {
+            width: 50px;
+            height: 50px;
+            font-size: 1.25rem;
+        }
+        
+        .edit-user-header h1 {
+            font-size: 1.5rem;
+        }
+        
+        .profile-image {
+            width: 100px;
+            height: 100px;
+        }
+    }
+</style>
+
+<!-- Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Profile Picture Preview
+        const profilePictureInput = document.getElementById("profile_picture");
+        const profilePreview = document.getElementById("profile-preview");
+    
+        if (profilePictureInput && profilePreview) {
+            profilePictureInput.addEventListener("change", function (event) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    profilePreview.src = reader.result;
+                };
+                if (event.target.files[0]) {
+                    reader.readAsDataURL(event.target.files[0]);
+                }
+            });
+        }
+    
+        // Toggle Switch
+        const toggleSwitch = document.querySelector('.toggle-switch input');
+        const toggleLabel = document.querySelector('.toggle-label');
+        
+        if (toggleSwitch && toggleLabel) {
+            toggleSwitch.addEventListener('change', function() {
+                toggleLabel.textContent = this.checked ? 'Aktif' : 'Nonaktif';
+            });
+        }
+    
+        // Form Submission Loading
+        const form = document.querySelector('.edit-user-form');
+        const saveButton = form.querySelector('.save-button');
+        
+        form.addEventListener('submit', function() {
+            saveButton.classList.add('loading');
+        });
+    
+        // Map Initialization
+        const map = L.map('map').setView([-6.2, 106.8], 11); // Default to Jakarta
+    
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    
+        // Marker Initialization
+        const titikInput = document.getElementById("id_titik");
+        let defaultLatLng = [-6.2, 106.8]; // Jakarta fallback
+        if (titikInput.value) {
+            const [lat, lng] = titikInput.value.split(",").map(Number);
+            defaultLatLng = [lat, lng];
+        }
+    
+        const marker = L.marker(defaultLatLng, { draggable: true }).addTo(map);
+        map.setView(defaultLatLng, 13);
+    
+        function updateTitikField(latlng) {
+            titikInput.value = `${latlng.lat.toFixed(6)},${latlng.lng.toFixed(6)}`;
+        }
+    
+        marker.on("dragend", function (e) {
+            updateTitikField(e.target.getLatLng());
+        });
+    
+        map.on("click", function (e) {
+            marker.setLatLng(e.latlng);
+            updateTitikField(e.latlng);
+        });
+    
+        // Geocoder Search
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+        })
+        .on('markgeocode', function(e) {
+            const latlng = e.geocode.center;
+            marker.setLatLng(latlng);
+            map.setView(latlng, 16);
+            updateTitikField(latlng);
+        })
+        .addTo(map);
+    });
+</script>
+{% endblock %}

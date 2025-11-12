@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card shadow-lg border-0 rounded-3">
+                <div class="card-body p-4">
+                    <h2 class="text-center fw-bold text-primary mb-4">
+                        <i class="fas fa-user-plus"></i> Tambah Pengguna
+                    </h2>
+
+                    <!-- Pesan Notifikasi -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert {{ message.tags }} alert-dismissible fade show text-center" role="alert">
+                                <i class="fas fa-info-circle"></i> {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <!-- Form Tambah Pengguna -->
+                    <form method="post" class="needs-validation" novalidate enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Bagian Foto Profil -->
+                        <div class="text-center mb-4">
+                            <label for="profile_picture" class="d-block">
+                                <img id="profile-preview" 
+                                    src="{% if user.profile_picture %}{{ user.profile_picture.url }}{% else %}{% static 'img/default-profile.png' %}{% endif %}" 
+                                    alt="Foto Profil" class="img-thumbnail profile-pic">
+                            </label>
+                            <input type="file" name="profile_picture" id="profile_picture" class="d-none">
+                            <p class="text-muted small">Klik gambar untuk mengganti foto profil</p>
+                        </div>
+
+                        {% for field in form %}
+                            {% if field.name != 'profile_picture' and field.name != 'titik' %}
+                                <div class="mb-3">
+                                    <label class="form-label fw-semibold">
+                                        {% if field.name == "username" %} Nama Pengguna
+                                        {% elif field.name == "nama_bank" %} Nama Bank Sampah
+                                        {% elif field.name == "email" %} Email
+                                        {% elif field.name == "nomor_hape" %} Nomor HP
+                                        {% elif field.name == "address" %} Alamat
+                                        {% elif field.name == "role" %} Peran
+                                        {% elif field.name == "is_active" %} Aktif?
+                                        {% elif field.name == "password1" %} Kata Sandi
+                                        {% elif field.name == "password2" %} Konfirmasi Kata Sandi
+                                        {% else %} {{ field.label }} {% endif %}
+                                    </label>
+                                    
+                                    {% if field.name == "nama_bank" and request.user.role in "admin_unit" %}
+                                        <div class="input-group">
+                                            <span class="input-group-text bg-light">
+                                                <i class="fas fa-id-card text-warning"></i>
+                                            </span>
+                                            <input type="text" name="nama_bank" value="{{ request.user.nama_bank }}" class="form-control" readonly>
+                                        </div>
+                                    {% elif field.name == "role" and request.user.role == "admin_unit" %}
+                                        <select name="{{ field.name }}" class="form-select" id="{{ field.auto_id }}">
+                                            <option value="member" selected>Nasabah</option>
+                                        </select>
+                                    {% else %}
+                                        <div class="input-group">
+                                            {% if field.name == "username" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-user text-primary"></i></span>
+                                            {% elif field.name == "nama_bank" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-id-card text-warning"></i></span>
+                                            {% elif field.name == "email" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-envelope text-danger"></i></span>
+                                            {% elif field.name == "nomor_hape" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-phone text-success"></i></span>
+                                            {% elif field.name == "address" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-map-marker-alt text-info"></i></span>
+                                            {% elif field.name == "role" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-user-tag text-dark"></i></span>
+                                            {% elif field.name == "is_active" %}
+                                                <span class="input-group-text bg-light"><i class="fas fa-toggle-on text-success"></i></span>
+                                            {% endif %}
+                                            
+                                            {{ field }}
+                                        </div>
+                                    {% endif %}
+
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small mt-1">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if request.user.role == 'admin_unit' or 'admin_yayasan' %}
+                        <!-- Bagian Peta untuk Admin Saja -->
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Titik Lokasi (Klik di peta)</label>
+                            <div id="map" style="height: 300px;" class="rounded shadow-sm"></div>
+                            <input type="hidden" id="id_titik" name="titik" value="{{ form.initial.titik|default:'' }}">
+                            <small class="text-muted">Klik pada peta atau geser marker untuk menentukan koordinat Bank Sampah.</small>
+                        </div>
+                        {% else %}
+                        <!-- Input Tersembunyi untuk Admin Unit -->
+                        <input type="hidden" name="titik" value="{{ request.user.titik }}">
+                        {% endif %}
+                        
+                        <button type="submit" class="btn btn-success w-100 fw-bold py-2 shadow-sm">
+                            <i class="fas fa-check-circle"></i> Tambah Pengguna
+                        </button>
+                    </form>
+
+                    <!-- Tombol Kembali -->
+                    <a href="{% url 'manage_users' %}" class="btn btn-secondary w-100 mt-3 fw-bold py-2 shadow-sm">
+                        <i class="fas fa-arrow-left"></i> Kembali
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet Geocoder CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+
+<!-- Script -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const profilePictureInput = document.getElementById("id_profile_picture");
+        const profilePreview = document.getElementById("profile-preview");
+
+        if (profilePictureInput && profilePreview) {
+            profilePictureInput.addEventListener("change", function (event) {
+                const reader = new FileReader();
+                reader.onload = function () {
+                    profilePreview.src = reader.result;
+                };
+                reader.readAsDataURL(event.target.files[0]);
+            });
+
+            profilePreview.addEventListener("click", function () {
+                profilePictureInput.click();
+            });
+        }
+
+        // Toggle tampilkan/sembunyikan password
+        const toggles = document.querySelectorAll(".toggle-password");
+        toggles.forEach(toggle => {
+            toggle.addEventListener("click", function () {
+                const targetId = this.dataset.target;
+                const input = document.getElementById(targetId);
+                if (input) {
+                    input.type = input.type === "password" ? "text" : "password";
+                    this.querySelector("i").classList.toggle("fa-eye");
+                    this.querySelector("i").classList.toggle("fa-eye-slash");
+                }
+            });
+        });
+
+        // Inisialisasi Peta
+        const map = L.map('map').setView([-6.2, 106.8], 11); // Default Jakarta
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        // Inisialisasi Marker
+        const titikInput = document.getElementById("id_titik");
+        let defaultLatLng = [-6.2, 106.8]; // fallback Jakarta
+        if (titikInput.value) {
+            const [lat, lng] = titikInput.value.split(",").map(Number);
+            defaultLatLng = [lat, lng];
+        }
+
+        const marker = L.marker(defaultLatLng, { draggable: true }).addTo(map);
+        map.setView(defaultLatLng, 13);
+
+        function updateTitikField(latlng) {
+            titikInput.value = `${latlng.lat.toFixed(6)},${latlng.lng.toFixed(6)}`;
+        }
+
+        marker.on("dragend", function (e) {
+            updateTitikField(e.target.getLatLng());
+        });
+
+        map.on("click", function (e) {
+            marker.setLatLng(e.latlng);
+            updateTitikField(e.latlng);
+        });
+
+        // Pencarian Lokasi
+        const geocoder = L.Control.geocoder({
+            defaultMarkGeocode: false
+        })
+        .on('markgeocode', function(e) {
+            const latlng = e.geocode.center;
+            marker.setLatLng(latlng);
+            map.setView(latlng, 16);
+            updateTitikField(latlng);
+        })
+        .addTo(map);
+    });
+</script>
+
+<!-- Styling -->
+<style>
+    body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    color: var(--dark-text);
+    }
+    .card {
+        animation: fadeIn 0.5s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .btn-success:hover { background-color: #218838; transition: 0.3s; }
+    .btn-secondary:hover { background-color: #6c757d; transition: 0.3s; }
+    .input-group:hover { box-shadow: 0px 0px 10px rgba(0, 123, 255, 0.2); transition: 0.3s; }
+
+    .profile-pic {
+        max-width: 120px;
+        max-height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+    .profile-pic:hover { opacity: 0.8; }
+</style>
+{% endblock %}

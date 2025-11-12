@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🏦 Admin - Data Bank Sampah</h2>
+
+    <!-- Add Bank Sampah Button -->
+    <div class="text-end mb-3">
+        <a href="{% url 'add_bank_sampah' %}" class="btn btn-success">
+            <i class="fas fa-plus-circle"></i> Tambah Bank Sampah
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="card shadow">
+        <div class="card-body">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>#</th>
+                        <th>Nama Bank Sampah</th>
+                        <th>Alamat</th>
+                        <th>Wilayah</th>
+                        <th>Petugas</th>
+                        <th>Jumlah Warga</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for bank in bank_sampah_list %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ bank.nama }}</td>
+                        <td>{{ bank.alamat }}</td>
+                        <td>{{ bank.wilayah }}</td>
+                        <td>{{ bank.petugas }}</td>
+                        <td>{{ bank.jumlah_warga }}</td>
+                        <td>
+                            <a href="{% url 'edit_bank_sampah' bank.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_bank_sampah' bank.id %}" class="btn btn-sm btn-danger" onclick="return confirm('Yakin ingin menghapus?')">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">Belum ada data Bank Sampah.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/js/all.min.js"></script>
+{% endblock %}

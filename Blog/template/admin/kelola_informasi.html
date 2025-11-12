@@ -1,0 +1,279 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4 py-lg-5">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 fw-bold text-success">
+            <i class="fas fa-images me-2"></i> Kelola Slider
+        </h1>
+    </div>
+
+    <!-- Add New Slide Card -->
+    <div class="card border-0 rounded-4 shadow-sm mb-5 overflow-hidden">
+        <div class="card-header bg-gradient py-3" style="background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);">
+            <h2 class="h5 mb-0 text-white fw-semibold">
+                <i class="fas fa-plus-circle me-2"></i> Tambah Slide Baru
+            </h2>
+        </div>
+        
+        <div class="card-body p-4">
+            <form method="post" enctype="multipart/form-data" class="slide-form">
+                {% csrf_token %}
+                
+                <!-- Image Upload Section -->
+                <div class="mb-4">
+                    <label class="d-block mb-2 fw-semibold">
+                        <i class="fas fa-image text-muted me-2"></i> Gambar Slide
+                    </label>
+                    <div class="image-upload-container border-2 border-dashed rounded-3 p-4 text-center position-relative"
+                         id="dropZone">
+                        <div id="imagePreview" class="d-none">
+                            <img id="previewImage" src="#" alt="Preview" class="img-fluid rounded-2 mb-2" style="max-height: 200px;">
+                            <button type="button" id="changeImage" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-sync-alt me-1"></i> Ganti Gambar
+                            </button>
+                        </div>
+                        <div id="uploadPrompt" class="py-4">
+                            <i class="fas fa-cloud-upload-alt display-4 text-muted mb-3"></i>
+                            <p class="mb-1">Drag & drop gambar atau klik untuk memilih</p>
+                            <p class="small text-muted">Format yang didukung: JPG, PNG (Maks. 5MB)</p>
+                            {{ form.image }}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Title Input -->
+                <div class="mb-3 form-floating">
+                    {{ form.title }}
+                    <label for="id_title">
+                        <i class="fas fa-heading text-muted me-2"></i> Judul Slide
+                    </label>
+                </div>
+                
+                <!-- Description Input -->
+                <div class="mb-4 form-floating">
+                    {{ form.description }}
+                    <label for="id_description">
+                        <i class="fas fa-align-left text-muted me-2"></i> Deskripsi
+                    </label>
+                </div>
+                
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-success rounded-3 px-4 py-2 fw-semibold w-100">
+                    <i class="fas fa-check-circle me-2"></i> Tambah Slide
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Slides Grid -->
+    <h2 class="h4 mb-3 fw-semibold text-muted">
+        <i class="fas fa-list me-2"></i> Daftar Slide
+    </h2>
+    
+    {% if slides %}
+    <div class="row g-4">
+        {% for slide in slides %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 rounded-4 shadow-sm overflow-hidden slide-card">
+                <div class="card-img-top position-relative overflow-hidden" style="height: 180px;">
+                    <img src="{{ slide.image.url }}" class="w-100 h-100 object-fit-cover" alt="{{ slide.title }}">
+                    <div class="position-absolute top-0 end-0 p-2">
+                        <a href="{% url 'hapus_slide' slide.id %}" class="btn btn-sm btn-danger rounded-circle shadow-sm" 
+                           data-bs-toggle="tooltip" title="Hapus Slide">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title fw-semibold mb-2">{{ slide.title }}</h5>
+                    <p class="card-text text-muted small">{{ slide.description|truncatechars:80 }}</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 pt-0">
+                    <small class="text-muted">
+                        <i class="far fa-calendar-alt me-1"></i> 
+                        Ditambahkan: {{ slide.created_at|date:"d M Y" }}
+                    </small>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-light rounded-4">
+        <i class="fas fa-images display-4 text-muted mb-3"></i>
+        <h3 class="h5 text-muted">Belum ada slide yang ditambahkan</h3>
+        <p class="text-muted">Mulai dengan menambahkan slide baru menggunakan form di atas</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Custom Styles -->
+<style>
+    /* Base Styles */
+    body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--dark-text);
+    background-color: var(--light-gray);
+    }
+    
+    /* Card Animation */
+    .slide-card {
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .slide-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Image Upload Styles */
+    .image-upload-container {
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-color: #dee2e6;
+    }
+    
+    .image-upload-container:hover {
+        border-color: #a8e063;
+        background-color: #f0f7e8;
+    }
+    
+    .image-upload-container.dragover {
+        border-color: #56ab2f;
+        background-color: #e8f3e1;
+    }
+    
+    /* Form Styles */
+    .form-floating>label {
+        padding-left: 2.5rem;
+    }
+    
+    .form-control, .form-select {
+        padding-left: 3rem;
+        border-radius: 0.5rem;
+        border: 1px solid #e0e0e0;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus, .form-select:focus {
+        border-color: #a8e063;
+        box-shadow: 0 0 0 0.25rem rgba(168, 224, 99, 0.25);
+    }
+    
+    .form-floating>label i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    /* Button Styles */
+    .btn-success {
+        background-color: #56ab2f;
+        border-color: #56ab2f;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-success:hover {
+        background-color: #478d27;
+        border-color: #478d27;
+        transform: translateY(-2px);
+    }
+    
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .card-body {
+            padding: 1.25rem;
+        }
+        
+        .image-upload-container {
+            padding: 1.5rem;
+        }
+    }
+</style>
+
+<!-- Custom Scripts -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Image Upload Preview
+        const imageInput = document.querySelector('input[type="file"]');
+        const dropZone = document.getElementById('dropZone');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        const uploadPrompt = document.getElementById('uploadPrompt');
+        const changeImageBtn = document.getElementById('changeImage');
+        
+        // Handle file selection
+        imageInput.addEventListener('change', function(e) {
+            if (e.target.files.length > 0) {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                
+                reader.onload = function(event) {
+                    previewImage.src = event.target.result;
+                    imagePreview.classList.remove('d-none');
+                    uploadPrompt.classList.add('d-none');
+                };
+                
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Change image button
+        changeImageBtn.addEventListener('click', function() {
+            imageInput.value = '';
+            imagePreview.classList.add('d-none');
+            uploadPrompt.classList.remove('d-none');
+        });
+        
+        // Drag and drop functionality
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, preventDefaults, false);
+        });
+        
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+        
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, highlight, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, unhighlight, false);
+        });
+        
+        function highlight() {
+            dropZone.classList.add('dragover');
+        }
+        
+        function unhighlight() {
+            dropZone.classList.remove('dragover');
+        }
+        
+        dropZone.addEventListener('drop', handleDrop, false);
+        
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            imageInput.files = files;
+            
+            // Trigger change event
+            const event = new Event('change');
+            imageInput.dispatchEvent(event);
+        }
+        
+        // Initialize tooltips
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

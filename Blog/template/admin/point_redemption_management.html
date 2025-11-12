@@ -1,0 +1,185 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h4 fw-bold text-gray-800 mb-1">
+                <i class="fas fa-exchange-alt me-2" style="color: #007A36;"></i>Kelola Penukaran Poin
+            </h1>
+            <p class="text-muted small">Review and manage user redemption requests</p>
+        </div>
+    </div>
+
+    <!-- System Messages -->
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-2" role="alert">
+            <div class="d-flex align-items-center">
+                <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} me-2"></i>
+                <div>{{ message }}</div>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Redemption Table Card -->
+    <div class="card border-0 shadow-sm rounded-3 animate__animated animate__fadeIn">
+        <div class="card-header bg-white border-0 py-3">
+            <h5 class="mb-0 fw-bold text-gray-800">
+                <i class="fas fa-clock me-2" style="color: #B88A2F;"></i>Pending Requests
+            </h5>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">User</th>
+                            <th>Points</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="redemption-table-body">
+                        {% for redemption in pending_requests %}
+                        <tr class="align-middle">
+                            <td class="ps-4 fw-medium">
+                                <div class="d-flex align-items-center">
+                                    <i class="fas fa-user-circle me-2 text-muted"></i>
+                                    {{ redemption.user.username }}
+                                </div>
+                            </td>
+                            <td class="fw-bold" style="color: #B88A2F;">
+                                -{{ redemption.points }}
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill py-2 px-3" style="background-color: #FFF8E1; color: #B88A2F;">
+                                    <i class="fas fa-clock me-1"></i> Menunggu
+                                </span>
+                            </td>
+                            <td>
+                                <form method="POST" class="d-flex gap-2 action-form">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="redemption_id" value="{{ redemption.id }}">
+                                    <button type="submit" name="action" value="approve" class="btn btn-sm btn-success px-3 py-2 shadow-sm">
+                                        <i class="fas fa-check me-1"></i> Approve
+                                    </button>
+                                    <button type="submit" name="action" value="reject" class="btn btn-sm btn-outline-danger px-3 py-2 shadow-sm reject-btn">
+                                        <i class="fas fa-times me-1"></i> Reject
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center py-4 text-muted">
+                                <i class="fas fa-inbox me-2"></i> No pending redemption requests
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Styles -->
+<style>
+    body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #f5f7fa;
+    }
+    
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    
+    .table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .table thead th {
+        border-bottom: none;
+        font-weight: 600;
+        color: #555;
+        padding-top: 16px;
+        padding-bottom: 16px;
+    }
+    
+    .table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .table tbody tr:hover {
+        background-color: rgba(0, 122, 54, 0.03);
+        transform: translateY(-1px);
+    }
+    
+    .table tbody td {
+        border-top: 1px solid #f0f0f0;
+        padding-top: 14px;
+        padding-bottom: 14px;
+        vertical-align: middle;
+    }
+    
+    .btn-success {
+        background-color: #007A36;
+        border-color: #007A36;
+    }
+    
+    .btn-success:hover {
+        background-color: #00612b;
+        border-color: #00612b;
+    }
+    
+    .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+    
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .animate__animated {
+        animation-duration: 0.5s;
+    }
+</style>
+
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
+<!-- Animate.css -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.querySelectorAll(".reject-btn").forEach(button => {
+            button.addEventListener("click", function (event) {
+                setTimeout(() => {
+                    updateBalance();  // ✅ Perbarui saldo setelah penukaran ditolak
+                }, 2000);
+            });
+        });
+
+        function updateBalance() {
+            fetch("{% url 'get_updated_balance' %}")
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("total-points").innerHTML = `<i class="fas fa-coins"></i> ${data.user_points} Poin`;
+                })
+                .catch(error => console.error("Kesalahan saat memperbarui saldo:", error));
+        }
+    });
+</script>
+
+{% endblock %}

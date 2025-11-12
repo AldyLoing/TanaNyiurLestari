@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Saldo Poin</h2>
+
+    <!-- Kartu Saldo Poin -->
+    <div class="card shadow-lg border-0">
+        <div class="card-body text-center">
+            <h4 class="fw-bold">Saldo Anda:</h4>
+            <h2 class="text-primary fw-bold" id="total-points">
+                <i class="fas fa-coins"></i> {{ total_points }} Poin
+            </h2>
+            <p class="text-muted">Tukarkan poin Anda untuk mendapatkan hadiah menarik!</p>
+        </div>
+    </div>
+
+    <!-- Riwayat Poin -->
+    <div class="card shadow-sm mt-4">
+        <div class="card-body">
+            <h5 class="fw-bold text-secondary">
+                <i class="fas fa-history"></i> Riwayat Poin
+            </h5>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mt-3">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th>Kategori Sampah</th>
+                            <th>Berat (kg)</th>
+                            <th>Poin</th>
+                            <th>Tanggal</th>
+                        </tr>
+                    </thead>
+                    <tbody id="transaction-table-body">
+                        {% for transaction in transactions %}
+                        <tr class="text-center">
+                            <td>
+                                <i class="
+                                    {% if transaction.category == 'plastik' %}fas fa-recycle text-primary{% endif %}
+                                    {% if transaction.category == 'kertas' %}fas fa-file-alt text-warning{% endif %}
+                                    {% if transaction.category == 'logam' %}fas fa-industry text-danger{% endif %}
+                                    {% if transaction.category == 'organik' %}fas fa-leaf text-success{% endif %}
+                                    {% if transaction.category == 'minyak_jelantah' %}fas fa-oil-can text-dark{% endif %}
+                                "></i>
+                                {{ transaction.get_category_display }}
+                            </td>
+                            <td>{{ transaction.weight_kg }} kg</td>
+                            <td class="fw-bold text-success">+{{ transaction.points }}</td>
+                            <td>{{ transaction.date|date:"d M Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted">Belum ada transaksi</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        function updateBalance() {
+            fetch("{% url 'check_balance' %}")  // Pastikan URL sesuai dengan views.py
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById("total-points").innerHTML = `<i class="fas fa-coins"></i> ${data.total_points} Poin`;
+
+                    let tbody = document.getElementById("transaction-table-body");
+                    tbody.innerHTML = "";
+                    data.transactions.forEach(transaction => {
+                        let row = `
+                            <tr class="text-center">
+                                <td>${transaction.category_display}</td>
+                                <td>${transaction.weight_kg} kg</td>
+                                <td class="fw-bold text-success">+${transaction.points}</td>
+                                <td>${transaction.date}</td>
+                            </tr>
+                        `;
+                        tbody.innerHTML += row;
+                    });
+                })
+                .catch(error => console.error("Kesalahan saat mengambil saldo:", error));
+        }
+
+        setInterval(updateBalance, 5000); // Perbarui saldo setiap 5 detik
+    });
+</script>
+
+{% endblock %}
