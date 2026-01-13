@@ -9,8 +9,9 @@
 [![Django](https://img.shields.io/badge/Django-5.1-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live_Demo-tananyiurlestari.com-success?style=for-the-badge&logo=google-chrome&logoColor=white)](https://tananyiurlestari.com/)
 
-[🚀 Quick Start](#-installation--setup) · [📖 Documentation](#-table-of-contents) · [🤝 Contributing](#-contributing) · [🔒 Security](#-security--api-key-management)
+[🚀 Quick Start](#-installation--setup) · [📖 Documentation](#-table-of-contents) · [🤝 Contributing](#-contributing) · [🔒 Security](#-security--api-key-management) · [🌐 Live Demo](https://tananyiurlestari.com/)
 
 ---
 
@@ -1068,7 +1069,7 @@ You are free to:
 Need help or have questions?
 
 ### 📧 Email
-[aldyloing@example.com](mailto:aldyloing@example.com)
+[loingaldy@gmail.com](mailto:loingaldy@gmail.com)
 
 ### 💬 GitHub Discussions
 [Start a discussion](https://github.com/AldyLoing/TanaNyiurLestari/discussions)
@@ -1078,9 +1079,9 @@ Need help or have questions?
 
 ### 📱 Community
 Join our community channels:
+- **WhatsApp**: [+62 822-9349-4989](https://wa.me/6282293494989)
+- **Instagram**: [@aldy_loing](https://instagram.com/aldy_loing)
 - **Discord**: [Coming Soon]
-- **Telegram**: [Coming Soon]
-- **WhatsApp**: [Coming Soon]
 
 ---
 
